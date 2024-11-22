@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Task Manager</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container">
+    <h1 class="mt-5">Task Manager</h1>
+
+    <h2 class="mt-4">Tasks</h2>
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Ready</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="task : ${tasks}">
+            <td th:text="${task.id}"></td>
+            <td th:text="${task.title}"></td>
+            <td th:text="${task.description}"></td>
+            <td th:text="${task.ready} ? 'Yes' : 'No'"></td>
+            <td>
+                <a th:href="@{/tasks/{id}(id=${task.id})}" class="btn btn-info">Edit</a>
+                <button th:onclick="'deleteTask(' + ${task.id} + ')' " class="btn btn-danger">Delete</button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <h2 class="mt-4">Add New Task</h2>
+    <form th:action="@{/tasks}" method="post">
+        <div class="mb-3">
+            <label for="title" class="form-label">Title</label>
+            <input type="text" id="title" name="title" class="form-control" required/>
+        </div>
+        <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea id="description" name="description" class="form-control" required></textarea>
+        </div>
+        <div class="mb-3">
+            <label for="ready" class="form-label">Ready</label>
+            <input type="checkbox" id="ready" name="ready"/>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Task</button>
+    </form>
+
+    <!-- JavaScript для обработки удаления задач -->
+    <script>
+        function deleteTask(id) {
+            if (confirm('Are you sure you want to delete this task?')) {
+                fetch('/tasks/' + id, {
+                    method: 'DELETE'
+                }).then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Error deleting task');
+                    }
+                });
+            }
+        }
+    </script>
+
+</div>
+</body>
+</html>
