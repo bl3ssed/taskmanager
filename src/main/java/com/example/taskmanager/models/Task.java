@@ -1,57 +1,62 @@
 package com.example.taskmanager.models;
 
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import org.springframework.boot.autoconfigure.web.WebProperties;
 
 @Entity
 public class Task {
-    @jakarta.persistence.Id
+
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public Long Id;
-    public String Title;
-    public String Description;
-    public boolean Ready;
+    private Long id; // Изменено на маленькую букву
 
+    private String title; // Изменено на маленькую букву
+    private String description; // Изменено на маленькую букву
+    private boolean ready; // Изменено на маленькую букву
+
+    // Конструктор без параметров
+    public Task() {}
+
+    // Полный конструктор
     public Task(Long id, String title, String description, boolean ready) {
-        Id = id;
-        Title = title;
-        Description = description;
-        Ready = ready;
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.ready = ready;
     }
 
+    // Геттеры и сеттеры
     public Long getId() {
-        return Id;
-    }
-
-    public String getTitle() {
-        return Title;
-    }
-
-    public String getDescription() {
-        return Description;
-    }
-
-    public boolean isReady() {
-        return Ready;
+        return id;
     }
 
     public void setId(Long id) {
-        Id = id;
+        this.id = id;
+    }
+
+    public String getTitle() {
+        return title;
     }
 
     public void setTitle(String title) {
-        Title = title;
+        this.title = title;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
     public void setDescription(String description) {
-        Description = description;
+        this.description = description;
+    }
+
+    public boolean isReady() {
+        return ready;
     }
 
     public void setReady(boolean ready) {
-        Ready = ready;
+        this.ready = ready;
     }
 }

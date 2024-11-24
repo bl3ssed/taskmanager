@@ -20,7 +20,9 @@ public class TaskService {
 
     // Получить все задачи
     public List<Task> getAllTasks() {
-        return taskRepository.findAll();
+        List<Task> tasks = taskRepository.findAll();
+        System.out.println("Retrieved tasks: " + tasks); // Выводим задачи в консоль
+        return tasks;
     }
 
     // Получить задачу по ID

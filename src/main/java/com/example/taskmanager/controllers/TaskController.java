@@ -40,7 +40,7 @@ public class TaskController {
         return "editTask"; // Здесь можно создать отдельный шаблон для редактирования задачи
     }
 
-    @PutMapping("/{id}")
+    @PostMapping("/{id}")
     public String updateTask(@PathVariable Long id, @ModelAttribute Task updatedTask) {
         taskService.updateTask(id, updatedTask);
         return "redirect:/tasks"; // Перенаправление на список задач после обновления
