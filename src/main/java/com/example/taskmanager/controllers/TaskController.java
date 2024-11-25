@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/tasks")
@@ -24,8 +25,32 @@ public class TaskController {
     @GetMapping
     public String getAllTasks(Model model) {
         List<Task> tasks = taskService.getAllTasks();
-        model.addAttribute("tasks", tasks);
+
+        // Фильтрация задач на активные и архивные
+        List<Task> archivedTasks = tasks.stream()
+                .filter(Task::isReady) // Используем метод isReady()
+                .collect(Collectors.toList());
+
+        List<Task> activeTasks = tasks.stream()
+                .filter(task -> !task.isReady())
+                .collect(Collectors.toList());
+
+        model.addAttribute("activeTasks", activeTasks);
+        model.addAttribute("archivedTasks", archivedTasks);
+
         return "taskList"; // Возвращаем имя шаблона
+    }
+
+    @DeleteMapping("/archive")
+    public ResponseEntity<Void> clearArchive() {
+        taskService.clearArchive();
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/ready")
+    public ResponseEntity<Void> setTaskReady(@PathVariable Long id) {
+        taskService.setTaskReady(id); // Метод в сервисе для обновления статуса задачи
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping

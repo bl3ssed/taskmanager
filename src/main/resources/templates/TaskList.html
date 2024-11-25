@@ -4,70 +4,153 @@
     <meta charset="UTF-8">
     <title>Task Manager</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
+    <style>
+        .header {
+            background-color: #007bff; /* Цвет фона */
+            color: white; /* Цвет текста */
+            padding: 10px 20px; /* Отступы */
+            text-align: center; /* Выравнивание текста по центру */
+        }
+        .header a {
+            color: white; /* Цвет ссылки */
+            text-decoration: none; /* Убираем подчеркивание */
+            font-size: 36px; /* Размер шрифта */
+        }
+        .header a:hover {
+            text-decoration: underline; /* Подчеркивание при наведении */
+        }
+    </style>
 </head>
 <body>
+
+<!-- Хедер -->
+<div class="header">
+    <h1><a href="/tasks">Task List</a></h1>
+</div>
+
 <div class="container">
-    <h1 class="mt-5">Task Manager</h1>
-
-    <h2 class="mt-4">Tasks</h2>
-    <table class="table table-striped">
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>Title</th>
-            <th>Description</th>
-            <th>Ready</th>
-            <th>Actions</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="task : ${tasks}">
-            <td th:text="${task.id}"></td>
-            <td th:text="${task.title}"></td>
-            <td th:text="${task.description}"></td>
-            <td th:text="${task.ready} ? 'Yes' : 'No'"></td>
-            <td>
-                <a th:href="@{/tasks/{id}(id=${task.id})}" class="btn btn-info">Edit</a>
-                <button th:onclick="'deleteTask(' + ${task.id} + ')' " class="btn btn-danger">Delete</button>
-            </td>
-        </tr>
-        </tbody>
-    </table>
-
-    <h2 class="mt-4">Add New Task</h2>
-    <form th:action="@{/tasks}" method="post">
-        <div class="mb-3">
-            <label for="title" class="form-label">Title</label>
-            <input type="text" id="title" name="title" class="form-control" required/>
+    <h2 class="mt-4">Active Tasks</h2>
+    <div class="row">
+        <div class="col-md-4" th:each="task : ${activeTasks}">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${task.title}"></h5>
+                    <p class="card-text" th:text="${task.description}"></p>
+                    <p class="card-text">
+                        <strong>Status:</strong>
+                        <span th:text="${task.ready} ? 'Ready' : 'Not Ready'"></span>
+                    </p>
+                    <a th:href="@{/tasks/{id}(id=${task.id})}" class="btn btn-info">Edit</a>
+                    <button th:onclick="'deleteTask(' + ${task.id} + ')' " class="btn btn-danger">Delete</button>
+                    <!-- Кнопка для изменения статуса на Ready -->
+                    <button th:onclick="'setReady(' + ${task.id} + ')' " class="btn btn-success">Ready</button>
+                </div>
+            </div>
         </div>
-        <div class="mb-3">
-            <label for="description" class="form-label">Description</label>
-            <textarea id="description" name="description" class="form-control" required></textarea>
-        </div>
-        <div class="mb-3">
-            <label for="ready" class="form-label">Ready</label>
-            <input type="checkbox" id="ready" name="ready"/>
-        </div>
-        <button type="submit" class="btn btn-primary">Add Task</button>
-    </form>
+    </div>
 
-    <!-- JavaScript для обработки удаления задач -->
+    <h2 class="mt-4">Archived Tasks</h2>
+    <div class="row">
+        <div class="col-md-4" th:each="task : ${archivedTasks}">
+            <div class="card mb-4 bg-light">
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${task.title}"></h5>
+                    <p class="card-text" th:text="${task.description}"></p>
+                    <p class="card-text">
+                        <strong>Status:</strong>
+                        <span th:text="${task.ready} ? 'Ready' : 'Not Ready'"></span>
+                    </p>
+                    <!-- Кнопка для удаления задачи из архива -->
+                    <button th:onclick="'deleteTask(' + ${task.id} + ')' " class="btn btn-danger">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Кнопка для очистки архива -->
+    <button th:onclick="'clearArchive()'" class="btn btn-warning">Clear Archive</button>
+
     <script>
-        function deleteTask(id) {
-            if (confirm('Are you sure you want to delete this task?')) {
-                fetch('/tasks/' + id, {
+        function clearArchive() {
+            if (confirm('Are you sure you want to clear the archive?')) {
+                fetch('/tasks/archive', {
                     method: 'DELETE'
                 }).then(response => {
                     if (response.ok) {
-                        location.reload();
+                        location.reload(); // Обновляем страницу после очистки архива
                     } else {
-                        alert('Error deleting task');
+                        alert('Error clearing archive');
                     }
                 });
             }
         }
     </script>
 
+    <!-- Кнопка для открытия модального окна -->
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+        Add New Task
+    </button>
+
+    <!-- Модальное окно для добавления новой задачи -->
+    <div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="addTaskModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addTaskModalLabel">Add New Task</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form th:action="@{/tasks}" method="post">
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Title</label>
+                            <input type="text" id="title" name="title" class="form-control" required/>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea id="description" name="description" class="form-control" required></textarea>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" id="ready" name="ready" class="form-check-input"/>
+                            <label for="ready" class="form-check-label">Ready</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Task</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ... (остальная часть кода остается без изменений) ... -->
+
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+<script>
+    function deleteTask(id) {
+        if (confirm('Are you sure you want to delete this task?')) {
+            fetch('/tasks/' + id, {
+                method: 'DELETE'
+            }).then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('Error deleting task');
+                }
+            });
+        }
+    }
+
+    function setReady(id) {
+        fetch('/tasks/' + id + '/ready', {
+            method: 'PATCH' // Используем PATCH для изменения статуса
+        }).then(response => {
+            if (response.ok) {
+                location.reload(); // Обновляем страницу после изменения статуса
+            } else {
+                alert('Error setting task to ready');
+            }
+        });
+    }
+</script>
+
 </body>
 </html>

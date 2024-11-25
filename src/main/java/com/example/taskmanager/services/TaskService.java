@@ -2,6 +2,8 @@ package com.example.taskmanager.services;
 
 import com.example.taskmanager.models.Task;
 import com.example.taskmanager.repositories.TaskRepository;
+import jakarta.persistence.*;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +27,17 @@ public class TaskService {
         return tasks;
     }
 
+    public void setTaskReady(Long id) {
+        Optional<Task> taskOptional = taskRepository.findById(id);
+        if (taskOptional.isPresent()) {
+            Task task = taskOptional.get();
+            task.setReady(true); // Устанавливаем статус ready в true
+            taskRepository.save(task); // Сохраняем изменения
+        } else {
+            throw new EntityNotFoundException("Task not found with id " + id);
+        }
+    }
+
     // Получить задачу по ID
     public Optional<Task> getTaskById(Long id) {
         return taskRepository.findById(id);
@@ -42,6 +55,11 @@ public class TaskService {
             return taskRepository.save(updatedTask);
         }
         return null; // Или выбросьте исключение, если задача не найдена
+    }
+    @Transactional
+    public void clearArchive() {
+        // Удаляем все задачи, которые готовы (в архиве)
+        taskRepository.deleteAllByReadyTrue(); // Предполагается, что этот метод существует
     }
 
     // Удалить задачу по ID
