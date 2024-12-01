@@ -1,30 +1,30 @@
 package com.example.taskmanager.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 @Entity
 public class Task {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // Изменено на маленькую букву
+    private Long id;
 
-    private String title; // Изменено на маленькую букву
-    private String description; // Изменено на маленькую букву
-    private boolean ready; // Изменено на маленькую букву
+    private String title;
+    private String description;
+    private boolean ready;
 
-    // Конструктор без параметров
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
     public Task() {}
 
-    // Полный конструктор
-    public Task(Long id, String title, String description, boolean ready) {
+    public Task(Long id, String title, String description, boolean ready, User user) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.ready = ready;
+        this.user = user;
     }
 
     // Геттеры и сеттеры
@@ -58,5 +58,13 @@ public class Task {
 
     public void setReady(boolean ready) {
         this.ready = ready;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }

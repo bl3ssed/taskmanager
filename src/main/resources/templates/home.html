@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Task Manager</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+
+<div class="container">
+    <h1>Welcome to the Task Manager</h1>
+    <p>Welcome, <span th:text="${user.username}">Username</span>!</p>
+
+    <!-- Ссылка на список задач для текущего пользователя -->
+    <a th:href="@{/tasks/user/{userId}(userId=${user.id})}" class="btn btn-primary">View Your Tasks</a>
+</div>
+
+</body>
+</html>

@@ -9,7 +9,7 @@
 <div class="container">
     <h1 class="mt-5">Edit Task</h1>
 
-    <form action="#" th:action="@{/tasks/{id}(id=${task.id})}" method="post" th:object="${task}">
+    <form th:action="@{/tasks/{id}(id=${task.id})}" method="post" th:object="${task}">
         <div class="mb-3">
             <label for="title" class="form-label">Title</label>
             <input type="text" id="title" name="title" class="form-control" th:field="*{title}" required />
@@ -25,7 +25,6 @@
         <button type="submit" class="btn btn-primary">Update Task</button>
         <a href="/tasks" class="btn btn-secondary">Cancel</a>
     </form>
-
 </div>
 </body>
 </html>
