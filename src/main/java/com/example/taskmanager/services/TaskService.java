@@ -4,6 +4,7 @@ import com.example.taskmanager.models.Task;
 import com.example.taskmanager.models.User;
 import com.example.taskmanager.repositories.TaskRepository;
 import com.example.taskmanager.repositories.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +21,9 @@ public class TaskService {
     public TaskService(TaskRepository taskRepository, UserRepository userRepository) {
         this.taskRepository = taskRepository;
         this.userRepository = userRepository;
+    }
+    public List<Task> getTasksByUserIdAndReady(Long userId, boolean ready) {
+        return taskRepository.findByUserIdAndReady(userId, ready);
     }
 
     // Получить все задачи пользователя
@@ -65,4 +69,36 @@ public class TaskService {
             throw new IllegalArgumentException("Задача не найдена или принадлежит другому пользователю");
         }
     }
+
+    public void setTaskReady(Long id) {
+        Optional<Task> taskOptional = taskRepository.findById(id);
+        if (taskOptional.isPresent()) {
+            Task task = taskOptional.get();
+            task.setReady(true); // Устанавливаем статус ready в true
+            taskRepository.save(task); // Сохраняем изменения
+        } else {
+            throw new EntityNotFoundException("Task not found with id " + id);
+        }
+    }
+
+    public void setReady(Long taskId, Long userId) {
+        // Проверяем, существует ли задача с таким ID и принадлежит ли она пользователю
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+
+        if (!task.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Task does not belong to this user");
+        }
+
+        // Обновляем статус задачи
+        task.setReady(true);
+        taskRepository.save(task); // Сохраняем изменения
+    }
+
+    public void clearArchiveByUser(Long userId) {
+        List<Task> archivedTasks = taskRepository.findArchivedTasksByUserId(userId);
+        taskRepository.deleteAll(archivedTasks);
+    }
+
+
 }

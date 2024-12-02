@@ -67,8 +67,9 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/home","/profile","/tasks/user/**").authenticated() // Защищенный маршрут
+                        .requestMatchers("/home","/profile","/tasks/**").authenticated() // Защищенный маршрут
                         .requestMatchers("/login", "/register", "/resources/**").permitAll() // Разрешенные маршруты
+                        .anyRequest().hasAnyRole("ADMIN")
                 )
                 .formLogin(login -> login
                         .loginPage("/login") // Настройка страницы входа
@@ -81,7 +82,7 @@ public class SecurityConfig {
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                        .invalidSessionUrl("/register")  // Перенаправление на страницу login, если сессия невалидна
+                        .invalidSessionUrl("/login")  // Перенаправление на страницу login, если сессия невалидна
                         .maximumSessions(1)  // Ограничение на одну сессию на пользователя
                         .expiredUrl("/login?expired-session=true")  // Перенаправление на страницу login, если сессия истекла
                 )

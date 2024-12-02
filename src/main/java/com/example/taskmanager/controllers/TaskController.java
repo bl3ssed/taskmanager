@@ -5,8 +5,10 @@ import com.example.taskmanager.models.User;
 import com.example.taskmanager.services.TaskService;
 import com.example.taskmanager.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -33,16 +35,21 @@ public class TaskController {
         String currentUsername = authentication.getName();
         Optional<User> currentUser = userService.findByUsername(currentUsername);
 
-        if (currentUser.isPresent() && !currentUser.get().getId().equals(userId)) {
-            // Если текущий пользователь не является владельцем запрашиваемых задач, отказать в доступе
-            return "error/403"; // Можно перенаправить на страницу с ошибкой доступа
+        if (currentUser.isEmpty() || !currentUser.get().getId().equals(userId)) {
+            return "error/403"; // Возвращаем ошибку доступа, если пользователь не совпадает
         }
 
-        List<Task> tasks = taskService.getAllTasksByUserId(userId);
-        model.addAttribute("tasks", tasks);
+        // Получение задач пользователя
+        List<Task> activeTasks = taskService.getTasksByUserIdAndReady(userId, false); // Задачи, которые не готовы
+        List<Task> archivedTasks = taskService.getTasksByUserIdAndReady(userId, true); // Архивированные задачи (готовые)
+
+        model.addAttribute("activeTasks", activeTasks);
+        model.addAttribute("archivedTasks", archivedTasks);
         model.addAttribute("userId", userId);
-        return "taskList"; // Шаблон для отображения задач
+
+        return "taskList"; // Шаблон отображения списка задач
     }
+
 
     // Создание задачи для пользователя
     @PostMapping("/user/{userId}")
@@ -58,6 +65,13 @@ public class TaskController {
         model.addAttribute("userId", userId); // Для корректного возвращения пользователя
         return "editTask"; // Шаблон для редактирования задачи
     }
+    @PatchMapping("/{taskId}/user/{userId}/ready")
+    public ResponseEntity<Void> setTaskReady(@PathVariable Long taskId, @PathVariable Long userId) {
+        // Логика обновления статуса задачи
+        taskService.setReady(taskId, userId);
+        return ResponseEntity.ok().build();
+    }
+
 
     // Обновление задачи для пользователя
     @PostMapping("/{taskId}/user/{userId}")
@@ -72,4 +86,20 @@ public class TaskController {
         taskService.deleteTaskForUser(taskId, userId);
         return ResponseEntity.noContent().build();
     }
+    @DeleteMapping("/user/{userId}/archive")
+    public ResponseEntity<Void> clearUserArchive(@PathVariable Long userId, Authentication authentication) {
+        String currentUsername = authentication.getName();
+
+        // Проверяем, что текущий пользователь соответствует userId
+        User currentUser = userService.findByUsername(currentUsername)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        if (!currentUser.getId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // Доступ запрещен
+        }
+
+        taskService.clearArchiveByUser(userId);
+        return ResponseEntity.noContent().build();
+    }
+
 }
